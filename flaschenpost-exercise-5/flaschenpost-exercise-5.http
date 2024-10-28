@@ -1,0 +1,6 @@
+@flaschenpost_exercise_5_HostAddress = http://localhost:5187
+
+GET {{flaschenpost_exercise_5_HostAddress}}/productdata/
+Accept: application/json
+
+###
