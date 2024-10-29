@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace flaschenpost_exercise_5.ViewModels
+﻿namespace flaschenpost_exercise_5.ViewModels
 {
     /// <summary>
     /// Product data

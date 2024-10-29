@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using System.Reflection;
 
 namespace flaschenpost_exercise_5

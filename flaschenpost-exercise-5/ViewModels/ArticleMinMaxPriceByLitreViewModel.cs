@@ -1,5 +1,4 @@
-﻿using flaschenpost_exercise_5.ViewModels;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 
