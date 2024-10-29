@@ -126,6 +126,7 @@ namespace flaschenpost_exercise_5.Controllers
                 .SelectMany(productData => productData.Articles
                     .Where(article => article.Price == price)
                     .Select(article => (ProductData: productData, Article: article)))
+                .OrderBy(articleProduct => articleProduct.Article.PricePerUnit)
                 .ToArray();
 
             var priceMatchingArticleProductViewmodels = MapArticleProductToArticleProductViewModel(priceMatchingArticleProducts);
