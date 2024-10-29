@@ -1,5 +1,5 @@
 using flaschenpost_exercise_5.Controllers;
-using flaschenpost_exercise_5.Models;
+using flaschenpost_exercise_5.ViewModels;
 using NUnit.Framework;
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -16,23 +16,20 @@ namespace ProductDataTests
         {
 
             // HttpClient is intended to be instantiated once per application, rather than per-use.
-            using (var client = new HttpClient())
+            using var client = new HttpClient();
+            var url = "https://flapotest.blob.core.windows.net/test/ProductData.json";
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            var response = client.GetAsync(url).Result;
+            response.EnsureSuccessStatusCode();
+            var jsonString = response.Content.ReadAsStringAsync().Result;
+
+            var options = new JsonSerializerOptions
             {
-                var url = "https://flapotest.blob.core.windows.net/test/ProductData.json";
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                PropertyNameCaseInsensitive = true
+            };
 
-                var response = client.GetAsync(url).Result;
-                response.EnsureSuccessStatusCode();
-                var jsonString = response.Content.ReadAsStringAsync().Result;
-
-                var options = new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                };
-
-
-                productData = JsonSerializer.Deserialize<ProductData[]>(jsonString, options);
-            }
+            productData = JsonSerializer.Deserialize<ProductData[]>(jsonString, options);
         }
 
         [Test]
@@ -44,7 +41,7 @@ namespace ProductDataTests
 
                 var allPricesInEuroPerLitre = testProductData.All(p => p.Articles.All(a => a.PricePerUnitText.Contains("€/Liter")));
 
-                Assert.IsTrue(allPricesInEuroPerLitre);
+                Assert.That(allPricesInEuroPerLitre, Is.True);
             }
         }
 
@@ -58,13 +55,12 @@ namespace ProductDataTests
                 // decimal price with comma and two following digits a space and '€/Liter' in parentheses. => (2,10 €/Liter)
                 string pat = @"((^\()(\d+)\,(\d{2}))( €/Liter\))$";
 
-
                 // Instantiate the regular expression object.
                 Regex r = new Regex(pat, RegexOptions.IgnoreCase);
 
                 var allPricesMatchRegexPattern = testProductData.All(p => p.Articles.All(a => r.Match(a.PricePerUnitText).Success));
 
-                Assert.IsTrue(allPricesMatchRegexPattern);
+                Assert.That(allPricesMatchRegexPattern, Is.True);
             }
         }
 
@@ -86,8 +82,7 @@ namespace ProductDataTests
 
                 var allPricesInEuroPerLitre = testProductData.All(p => p.Articles.All(a => a.PricePerUnitText.Contains("€/Liter")));
 
-                Assert.IsFalse(allPricesInEuroPerLitre);
-
+                Assert.That(allPricesInEuroPerLitre, Is.False);
             }
         }
 
@@ -101,13 +96,12 @@ namespace ProductDataTests
                 // Amount of bottles  followed by space x space and the capacity in L followed by bottle material in parentheses. => 20 x 0,5L (Glas)
                 string pat = @"((\d+) x (\d+)(,\d+)?)L \([A-Za-z]*\)$";
 
-
                 // Instantiate the regular expression object.
                 Regex r = new Regex(pat, RegexOptions.IgnoreCase);
 
                 var allShortDescriptionsMatchRegexPattern = testProductData.All(p => p.Articles.All(a => r.Match(a.ShortDescription).Success));
 
-                Assert.IsTrue(allShortDescriptionsMatchRegexPattern);
+                Assert.That(allShortDescriptionsMatchRegexPattern, Is.True);
             }
         }
 
@@ -128,14 +122,14 @@ namespace ProductDataTests
                 }
 
                 var productDataController = new ProductDataController();
-                var response = productDataController.GetCheapestAndMostExpensiveArticlesPerLitre(testProductData);
+                var response = productDataController.GetArticlesWithMinAndMaxPricePerLitre(testProductData);
 
                 if (response != null && response.Value != null)
                 {
-                    Article[] responseProductData = ((IEnumerable<Article>)response.Value).ToArray();
-                    var responseCount = responseProductData.Count();
+                    ArticleMinMaxPriceByLitreViewModel responseProductData = (ArticleMinMaxPriceByLitreViewModel)response.Value;
+                    var responseCount = responseProductData.MinPrice.Length + responseProductData.MaxPrice.Length;
 
-                    Assert.IsTrue(responseCount == 4);
+                    Assert.That(responseCount, Is.EqualTo(4));
                 }
             }
         }
@@ -153,7 +147,7 @@ namespace ProductDataTests
                 {
                     krombacher.Articles[0].ShortDescription = "99 x 0,5L (Glas)";
                     krombacher.Articles[1].ShortDescription = "99 x 0,5L (Glas)";
-                    var krombacherArticles = new Article[] { krombacher.Articles[0], krombacher.Articles[1], krombacher.Articles[1] };
+                    var krombacherArticles = new Article[] { krombacher.Articles[0], krombacher.Articles[1] };
                     krombacher.Articles = krombacherArticles;
                     testProductData = testProductData.Except(testProductData.Where(x => x.Id == 556)).Append(krombacher).ToArray();
                 }
@@ -163,12 +157,11 @@ namespace ProductDataTests
 
                 if (response != null && response.Value != null)
                 {
-                    Article[] responseProductData = ((IOrderedEnumerable<Article>)response.Value).ToArray();
-                    var responseCount = responseProductData.Count();
+                    ArticleProductViewModel[] responseProductData = ((IEnumerable<ArticleProductViewModel>)response.Value).ToArray();
+                    var responseCount = responseProductData.Length;
 
-                    Assert.IsTrue(responseCount == 3);
+                    Assert.That(responseCount, Is.EqualTo(2));
                 }
-
             }
         }
     }

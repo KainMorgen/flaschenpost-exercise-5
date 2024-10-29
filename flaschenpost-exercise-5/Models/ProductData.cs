@@ -1,4 +1,6 @@
-﻿namespace flaschenpost_exercise_5.Models
+﻿using System;
+
+namespace flaschenpost_exercise_5.ViewModels
 {
     /// <summary>
     /// Product data
@@ -14,12 +16,12 @@
         /// Product brand name
         /// </summary>
         public string BrandName { get; set; }
-        
+
         /// <summary>
         /// Product name
         /// </summary>
         public string Name { get; set; }
-        
+
         /// <summary>
         /// Articles / variants the product is sold by
         /// </summary>
@@ -29,5 +31,10 @@
         /// Optional description text of the product. 
         /// </summary>
         public string DescriptionText { get; set; }
+
+        public ProductData ShallowCopy()
+        {
+            return (ProductData)MemberwiseClone();
+        }
     }
 }

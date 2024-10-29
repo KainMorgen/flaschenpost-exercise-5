@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace flaschenpost_exercise_5.Models
+namespace flaschenpost_exercise_5.ViewModels
 {
     public class Article
     {
